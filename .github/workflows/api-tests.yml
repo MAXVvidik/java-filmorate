@@ -50,7 +50,10 @@ jobs:
           chmod a+x ./tests/.github/workflows/run.sh
           ./tests/.github/workflows/run.sh
 
-      
+      - name: Waiting for application is up
+        run: |
+          /tmp/wait-for-it.sh -t 120 localhost:8080
+          echo "Application is up"
 
       - name: Run POSTMAN tests
         run: |
