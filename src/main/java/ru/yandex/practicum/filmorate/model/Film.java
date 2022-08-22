@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.model;
 
 import java.time.LocalDate;
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 import lombok.*;
 
@@ -20,5 +22,7 @@ public class Film {
     private LocalDate releaseDate;//дата релиза — releaseDate;
     @NonNull
     private int duration;//продолжительность фильма — duration.
+    @Builder.Default
+    private Set<Integer> amountLikes = new HashSet<>();
 
 }
