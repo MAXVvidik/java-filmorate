@@ -22,9 +22,9 @@ import java.util.*;
 @RestController
 @Slf4j
 public class UserController {
-    private final UserService userService;
     private final UserStorage userStorage;
-
+    private final UserController userController;
+    private final UserService userService;
     private static int id = 0;
 
     public int getId() {
@@ -33,28 +33,31 @@ public class UserController {
     }
 
     @Autowired
-    public UserController(UserService userService, UserStorage userStorage) {
-        this.userService = userService;
+    public UserController(UserStorage userStorage, UserController userController, UserService userService) {
         this.userStorage = userStorage;
+        this.userController = userController;
+        this.userService = userService;
     }
 
     @GetMapping("/users")
     public List<User> findAllUsers() {
-        return userStorage.findAllUsers();
+        log.info("Получен запрос к эндпоинту: GET /users");
+        return userService.findAllUsers();
     }
 
     @PostMapping("/users")
     @ResponseBody
     public ResponseEntity<User> createUser(@RequestBody User user) {
         userService.addUser(user);
+        userStorage.addUser(user);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
-
     @PutMapping("/users")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         userStorage.updateUser(user);
+        userService.updateUser(user);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
@@ -65,45 +68,22 @@ public class UserController {
 
     @GetMapping("/users/{id}/friends")
     public List<User> getAllFriends(@PathVariable("id") int id) {
-        List<User> mutualFriends = new ArrayList<>();
-        User user = userStorage.getUserById(id);
-        for(Integer idFriend : user.getFriends()) {
-            User friend = userStorage.getUserById(idFriend);
-            mutualFriends.add(friend);
-        }
-        return mutualFriends;
+        return userService.getAllFriend(id);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
     public List<User> getMutualFriends(@PathVariable("id") int id, @PathVariable("otherId") int otherId) {
-        User firstUser = userStorage.getUserById(id);
-        User secondUser = userStorage.getUserById(otherId);
-        List<User> mutualFriends = new ArrayList<>();
-        firstUser.getFriends().stream()
-                .filter(idUser -> secondUser.getFriends().contains(idUser))
-                .forEach(idUser -> mutualFriends.add(userStorage.getUserById(idUser)));
-        return mutualFriends;
+        return userService.mutualFriends(id, otherId);
     }
 
     @PutMapping("/users/{id}/friends/{friendId}")
     public void addFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
-        User firstUser = userStorage.getUserById(id);
-        User secondUser = userStorage.getUserById(friendId);
-        firstUser.getFriends().add(secondUser.getId());
-        secondUser.getFriends().add(firstUser.getId());
-        userStorage.updateUser(firstUser);
-        userStorage.updateUser(secondUser);
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
-        User firstUser = userStorage.getUserById(id);
-        User secondUser = userStorage.getUserById(friendId);
-        firstUser.getFriends().remove(secondUser.getId());
-        secondUser.getFriends().remove(firstUser.getId());
-        userStorage.updateUser(firstUser);
-        userStorage.updateUser(secondUser);
-
+        userService.deleteFriend(id, friendId);
     }
 
 }

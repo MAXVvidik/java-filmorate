@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
 //Создайте FilmService, который будет отвечать за операции с фильмами,
 // — добавление и удаление лайка, вывод 10 наиболее популярных фильмов по количеству лайков.
 // Пусть пока каждый пользователь может поставить лайк фильму только один раз.
@@ -22,7 +21,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
-    private static final String POPULAR_FILMS = "10" ;
+
+    private static final String POPULAR_FILMS = "10";
     private final FilmStorage filmStorage;
     private final FilmService filmService;
 
@@ -36,29 +36,24 @@ public class FilmService {
         return Comparator.comparing(film -> film.getAmountLikes().size(), Comparator.reverseOrder());
     }
     public Film getFilmById(int id) {
-        log.info("Получен запрос к эндпоинту: GET /films/{id}");
-        if(!filmService.isContainsFilms(id)) {
-            throw new InputDataException("Фильм с таким id не найден");
-        }
-        return filmService.getFilmById(id);
+        return filmStorage.getFilmById(id);
     }
     public List<Film> findAllFilms() {// поиск всех фильмов
-        log.info("Получен запрос к эндпоинту: GET /films");
         return filmStorage.findAllFilms();
     }
 
-    public Film addFilm(Film film) {// добавление фильма
-        if (film.getAmountLikes() == null) {
+    public void addFilm(Film film) {// добавление фильма
+        if(film.getAmountLikes() == null) {
             film.setAmountLikes(new HashSet<>());
         }
-        if (new FilmDataValidate(film).checkAllData()) {
+        if(new FilmDataValidate(film).checkAllData()) {
             log.info("Получен запрос к эндпоинту: POST /films");
             film.setId(film.getId());
+            filmService.addFilm(film);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
         }
-        return film;
     }
     public void updateFilm(Film film) {// обновления
         if(film.getAmountLikes() == null) {
@@ -102,12 +97,18 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(String count) {//  вывод 10 наиболее популярных фильмов
+         filmStorage.findAllFilms().stream()
+                .filter(film -> film.getAmountLikes() != null)
+                .sorted(sortPopularFilm())
+                .limit(Integer.parseInt(count))
+                .collect(Collectors.toList());
         log.info("Получен запрос к эндпоинту: GET /films/popular");
-        if (count != null) {
+        if(count != null) {
             return filmService.getPopularFilms(count);
         } else {
             return filmService.getPopularFilms(POPULAR_FILMS);
         }
+
     }
 
 }
