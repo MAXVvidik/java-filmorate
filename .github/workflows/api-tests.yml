@@ -31,6 +31,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           path: tests
 
+      - name: Check and Build application
+        run: |
+          chmod a+x ./tests/.github/workflows/build.sh
+          ./tests/.github/workflows/build.sh
+
       - name: Install Node
         uses: actions/setup-node@v1
         with:
@@ -44,7 +49,12 @@ jobs:
         run: |
           chmod a+x ./tests/.github/workflows/run.sh
           ./tests/.github/workflows/run.sh
-   
+
+      - name: Waiting for application is up
+        run: |
+          /tmp/wait-for-it.sh -t 120 localhost:8080
+          echo "Application is up"
+
       - name: Run POSTMAN tests
         run: |
           newman run ./tests/postman/sprint.json --delay-request 50 -r cli
