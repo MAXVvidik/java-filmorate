@@ -26,11 +26,21 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final FilmService filmService;
 
+
+
     @Autowired
     public FilmService(InMemoryFilmStorage fileStorage, FilmService filmService) {
         this.filmStorage = fileStorage;
         this.filmService = filmService;
     }
+
+    private static int id = 0;
+
+    public int getId() {
+        this.id++;
+        return id;
+    }
+
 
     public Comparator<Film> sortPopularFilm() {
         return Comparator.comparing(film -> film.getAmountLikes().size(), Comparator.reverseOrder());
@@ -74,9 +84,9 @@ public class FilmService {
         return filmStorage.isContainsFilms(id);
     }
 
-    public FilmStorage getFilmStorage() {
-        return filmStorage;
-    }
+//    public FilmStorage getFilmStorage() {
+//        return filmStorage;
+//    }
 
     public void addLike(int filmId, int userId) {// добавление лайка,
         log.info("Получен запрос к эндпоинту: PUT /films добавление лайка к фильму " + filmId + ", пользователя " + userId);

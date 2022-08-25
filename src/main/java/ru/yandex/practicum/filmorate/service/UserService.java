@@ -83,7 +83,7 @@ public class UserService {
         }
         return userService.getUserById(id);
     }
-    public boolean isContainsUser(int idUser) {
+    private boolean isContainsUser(int idUser) {
         return userStorage.isContainsUser(idUser);
     }
 

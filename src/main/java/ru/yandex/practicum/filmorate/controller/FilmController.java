@@ -30,12 +30,6 @@ public class FilmController {
         this.filmStorage = filmStorage;
     }
 
-    private static int id = 0;
-
-    public int getId() {
-        this.id++;
-        return id;
-    }
 
     @GetMapping("/films")
     @ResponseBody
@@ -87,7 +81,7 @@ public class FilmController {
     public void deleteLike(@PathVariable("id") int filmId, @PathVariable("userId") int userId) {
         Film film = filmStorage.getFilmById(filmId);
         film.getAmountLikes().remove(userId);
-        filmService.removeLike(id, userId);
+        filmService.removeLike(filmId, userId);
         filmStorage.updateFilm(film);
     }
 
