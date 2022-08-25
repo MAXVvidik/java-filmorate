@@ -19,6 +19,14 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Install Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      - name: Install newman
+        run: |
+          npm install -g newman
       - name: Install helper script
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y wget &&
           wget --no-check-certificate -P /tmp/ https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
@@ -31,25 +39,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           path: tests
 
-      - name: Install Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: '12.x'
-
-      - name: Install newman
-        run: |
-          npm install -g newman
-
       - name: Run Application
-        run: |
-          chmod a+x ./tests/.github/workflows/run.sh
-          ./tests/.github/workflows/run.sh
+        run: nohup mvn spring-boot:run &
 
       - name: Waiting for application is up
-        run: |
-          /tmp/wait-for-it.sh -t 120 localhost:8080
-          echo "Application is up"
+        run: /tmp/wait-for-it.sh -t 120 localhost:8080 -- echo "application is up"
 
       - name: Run POSTMAN tests
         run: |
-          newman run ./tests/postman/sprint.json --delay-request 50 -r cli
+          newman run ./tests/postman/sprint.json -r cli
