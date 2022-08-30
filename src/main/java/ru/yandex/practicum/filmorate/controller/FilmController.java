@@ -32,28 +32,28 @@ public class FilmController {
 
 
     @GetMapping("/films")
-    @ResponseBody
+    //@ResponseBody
     public List<Film> findAllFilms() {
         log.info("Получен запрос к эндпоинту: GET /films");
         return filmService.findAllFilms();
     }
 
     @PostMapping("/films")
-    @ResponseBody
+    //@ResponseBody
     public ResponseEntity<Film> createFilm(@RequestBody Film film) {
         filmService.addFilm(film);
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
 
     @PutMapping("/films")
-    @ResponseBody
+    //@ResponseBody
     public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
         filmService.updateFilm(film);
         return new ResponseEntity<>(film, HttpStatus.OK);
     }
 
     @GetMapping("/films/{id}")
-    @ResponseBody
+    //@ResponseBody
     public Film getFilmByID(@PathVariable("id") int id) {
         log.info("Получен запрос к эндпоинту: GET /films/{id}");
         if(!filmService.isContainsFilms(id)) {
@@ -63,7 +63,7 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    @ResponseBody
+    //@ResponseBody
     public List<Film> getPopularFilms(@RequestParam(required = false) String count) {
         return filmService.getPopularFilms(count);
     }

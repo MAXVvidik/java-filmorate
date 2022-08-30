@@ -46,14 +46,14 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    @ResponseBody
+    //@ResponseBody
     public ResponseEntity<User> createUser(@RequestBody User user) {
         userService.addUser(user);
         userStorage.addUser(user);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
     @PutMapping("/users")
-    @ResponseBody
+   // @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         userStorage.updateUser(user);

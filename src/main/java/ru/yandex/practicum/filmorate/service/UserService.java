@@ -100,7 +100,7 @@ public class UserService {
             throw new InputDataException("Один или оба пользователя не найдены");
         }
     }
-    public void deleteFriend(int id, int friendId) {// удаление из друзей,
+    public void deleteFriend(int id, int friendId) {//
         User firstUser = userStorage.getUserById(id);
         User secondUser = userStorage.getUserById(friendId);
         firstUser.getFriends().remove(secondUser.getId());
