@@ -31,11 +31,11 @@ class ValidateUserDataTest {
         assertTrue(new UserDataValidate(user).checkAllData());
     }
 
-//    @Test
-//    public void incorrectEmail() {
-//        user.setEmail("email@yandex.ru");
-//        assertFalse(new UserDataValidate(user).checkAllData());
-//    }
+    @Test
+    public void incorrectEmail() {
+        user.setEmail("emailyandex.ru");
+        assertFalse(new UserDataValidate(user).checkAllData());
+    }
 
     @Test
     public void incorrectLogin() {
@@ -48,4 +48,5 @@ class ValidateUserDataTest {
         user.setBirthday(LocalDate.of(2025, 10, 01));
         assertFalse(new UserDataValidate(user).checkAllData());
     }
+
 }

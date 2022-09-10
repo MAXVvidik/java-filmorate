@@ -2,17 +2,18 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validate.UserDataValidate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //создание пользователя;
 //обновление пользователя;
@@ -21,8 +22,9 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class UserController {
-    private Map<Integer, User> users = new HashMap<>();
-
+    private final UserStorage userStorage;
+    private final UserController userController;
+    private final UserService userService;
     private static int id = 0;
 
     public int getId() {
@@ -30,49 +32,55 @@ public class UserController {
         return id;
     }
 
-    @PostMapping(value = "/users")
-    @ResponseBody
-    public ResponseEntity<User> createUser(@RequestBody User user) {//создание пользователя;
-        if(user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        if(new UserDataValidate(user).checkAllData()) {
-            user.setId(getId());
-            users.put(user.getId(), user);
-            log.info("Получен запрос к эндпоинту: POST /users" + user);
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
-        } else {
-            log.warn("Запрос к эндпоинту POST /users не обработан.");
-            throw new ValidationException("Одно или несколько условий не выполняются");
-        }
+    @Autowired
+    public UserController(UserStorage userStorage, UserController userController, UserService userService) {
+        this.userStorage = userStorage;
+        this.userController = userController;
+        this.userService = userService;
     }
-    @PutMapping(value = "/users")
-    @ResponseBody
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<User> updateUser(@RequestBody User user) {//обновление пользователя;
-        if(user.getName().isEmpty()) {
-            user.setName(user.getEmail());
-        }
-        if(new UserDataValidate(user).checkAllData() && user.getId() > 0) {
-            log.info("Получен запрос к эндпоинту: PUT /users");
-            users.put(user.getId(), user);
-            return new ResponseEntity<>(user, HttpStatus.OK);
-        } else {
-            log.warn("Запрос к эндпоинту PUT /users не обработан.");
-            throw new ValidationException("Одно или несколько условий не выполняются");
-        }
-    }
-
 
     @GetMapping("/users")
-    public List<User> findAllUsers() {//получение списка всех пользователей.
-        return new ArrayList<>(users.values());
+    public List<User> findAllUsers() {
+        log.info("Получен запрос к эндпоинту: GET /users");
+        return userService.findAllUsers();
     }
 
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<String> handleException(ValidationException e) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    @PostMapping("/users")
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        userService.addUser(user);
+        userStorage.addUser(user);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
+    }
+    @PutMapping("/users")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        userStorage.updateUser(user);
+        userService.updateUser(user);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    @GetMapping("/users/{id}")
+    public User getUserById(@PathVariable("id") int id) {
+        return userService.getUserById(id);
+    }
 
+    @GetMapping("/users/{id}/friends")
+    public List<User> getAllFriends(@PathVariable("id") int id) {
+        return userService.getAllFriend(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getMutualFriends(@PathVariable("id") int id, @PathVariable("otherId") int otherId) {
+        return userService.mutualFriends(id, otherId);
+    }
+
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
+        userService.deleteFriend(id, friendId);
+    }
 }
