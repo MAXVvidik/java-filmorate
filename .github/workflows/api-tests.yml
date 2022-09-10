@@ -27,13 +27,14 @@ jobs:
       - name: Install newman
         run: |
           npm install -g newman
+
+      - name: install git
+        run: apt-get install git
+
       - name: Install helper script
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y wget &&
           wget --no-check-certificate -P /tmp/ https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
           chmod a+x /tmp/wait-for-it.
-
-      - name: install git
-        run: apt-get install git
 
       - name: Checkout tests
         uses: actions/checkout@v3
