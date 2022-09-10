@@ -23,7 +23,7 @@ import java.util.*;
 @Slf4j
 public class UserController {
     private final UserStorage userStorage;
-    //private final UserController userController;
+    private final UserController userController;
     private final UserService userService;
     private static int id = 0;
 
@@ -35,7 +35,7 @@ public class UserController {
     @Autowired
     public UserController(UserStorage userStorage, UserController userController, UserService userService) {
         this.userStorage = userStorage;
-        //this.userController = userController;
+        this.userController = userController;
         this.userService = userService;
     }
 
