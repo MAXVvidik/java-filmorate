@@ -2,11 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -26,20 +22,17 @@ import java.util.List;
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
-    //private final UserController userController;
-    private final UserService userService;
 
     @Autowired
-    public UserService(InMemoryUserStorage inMemoryUserStorage, UserController userController, UserService userService) {
+    public UserService(InMemoryUserStorage inMemoryUserStorage) {
         this.userStorage = inMemoryUserStorage;
-        //this.userController = userController;
-        this.userService = userService;
+
     }
 
     public List<User> findAllUsers() {// поиск всех
         return userStorage.findAllUsers();
     }
-    public void addUser(User user) {// добавление
+    public User addUser(User user) {// добавление
         log.info("Получен запрос к эндпоинту: POST /users");
         if(user.getName().isEmpty()) {
             user.setName(user.getLogin());
@@ -49,7 +42,8 @@ public class UserService {
         }
         if(new UserDataValidate(user).checkAllData()) {
             user.setId(user.getId());
-            userService.addUser(user);
+            userStorage.updateUser(user);
+            return user;
         } else {
             log.warn("Запрос к эндпоинту POST /users не обработан.");
             throw new ValidationException("Одно или несколько условий не выполняются");
@@ -57,7 +51,7 @@ public class UserService {
     }
     public void updateUser(User user) {// обновление
         log.info("Получен запрос к эндпоинту: PUT /users");
-        if (!userService.isContainsUser(user.getId())) {
+        if (!this.isContainsUser(user.getId())) {
             throw new InputDataException("Пользователь с таким id не найден");
         }
         if (user.getFriends() == null) {
@@ -67,7 +61,7 @@ public class UserService {
             user.setName(user.getEmail());
         }
         if (new UserDataValidate(user).checkAllData() && user.getId() > 0) {
-            userService.updateUser(user);
+            userStorage.updateUser(user);
         } else {
             log.warn("Запрос к эндпоинту PUT /users не обработан.");
             throw new ValidationException("Одно или несколько условий не выполняются");
@@ -77,11 +71,11 @@ public class UserService {
 
     public User getUserById(int id) {//по айди
         log.info("Получен запрос к эндпоинту: GET /users/{id}");
-        if(!userService.isContainsUser(id)) {
+        if(!this.isContainsUser(id)) {
             log.warn("Пользователь с таким id не найден, id=" + id);
             throw new InputDataException("Пользователь с таким id не найден");
         }
-        return userService.getUserById(id);
+        return userStorage.getUserById(id);
     }
     private boolean isContainsUser(int idUser) {
         return userStorage.isContainsUser(idUser);
@@ -95,7 +89,7 @@ public class UserService {
         userStorage.updateUser(firstUser);
         userStorage.updateUser(secondUser);
         log.info("Получен запрос к эндпоинту: PUT /users/{id}/friends/{friendId}");
-        if(!userService.isContainsUser(id) || !userService.isContainsUser(friendId)) {
+        if(!this.isContainsUser(id) || !this.isContainsUser(friendId)) {
             log.warn("Один или оба пользователя не найдены в базе данных по id; id1=" + id + ", id2=" +friendId);
             throw new InputDataException("Один или оба пользователя не найдены");
         }
@@ -118,7 +112,7 @@ public class UserService {
                 .filter(idUser -> secondUser.getFriends().contains(idUser))
                 .forEach(idUser -> mutualFriends.add(userStorage.getUserById(idUser)));
         log.info("Получен запрос к эндпоинту: GET /users/{id}/friends/common/{otherId}");
-        if (!userService.isContainsUser(id) || !userService.isContainsUser(otherId)) {
+        if (!this.isContainsUser(id) || !this.isContainsUser(otherId)) {
             log.warn("Пользователь с таким id не найден, id1=" + id + ", id2=" + otherId);
             throw new InputDataException("Один из двух друзей не найден по своему id");
         }

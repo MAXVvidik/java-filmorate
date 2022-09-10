@@ -22,16 +22,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FilmService {
 
-    private static final String POPULAR_FILMS = "10";
     private final FilmStorage filmStorage;
-    private final FilmService filmService;
-
 
 
     @Autowired
-    public FilmService(InMemoryFilmStorage fileStorage, FilmService filmService) {
+    public FilmService(InMemoryFilmStorage fileStorage) {
         this.filmStorage = fileStorage;
-        this.filmService = filmService;
+
     }
 
     private static int id = 0;
@@ -59,7 +56,7 @@ public class FilmService {
         if(new FilmDataValidate(film).checkAllData()) {
             log.info("Получен запрос к эндпоинту: POST /films");
             film.setId(film.getId());
-            filmService.addFilm(film);
+            filmStorage.addFilm(film);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
@@ -69,12 +66,12 @@ public class FilmService {
         if(film.getAmountLikes() == null) {
             film.setAmountLikes(new HashSet<>());
         }
-        if(!filmService.isContainsFilms(film.getId())) {
+        if(!this.isContainsFilms(film.getId())) {
             throw new InputDataException("Фильм c таким id не найден");
         }
         if(new FilmDataValidate(film).checkAllData() && film.getId() > 0) {
             log.info("Получен запрос к эндпоинту: PUT /films обновление фильма");
-            filmService.updateFilm(film);
+            filmStorage.updateFilm(film);
         } else {
             log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
@@ -85,36 +82,35 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {// добавление лайка,
+        Film film = filmStorage.getFilmById(filmId);
+        film.getAmountLikes().add(userId);
+        filmStorage.updateFilm(film);//  в сервисе
         log.info("Получен запрос к эндпоинту: PUT /films добавление лайка к фильму " + filmId + ", пользователя " + userId);
-        filmService.addLike(filmId, userId);
     }
 
     public void removeLike(int filmId, int userId) {// удаление лайка,
+        Film film = filmStorage.getFilmById(filmId);
+        film.getAmountLikes().remove(userId);
         log.info("Получен запрос к эндпоинту: DELETE /films добавление лайка к фильму " + filmId + ", " +
                 "пользователя " + userId);
-        if(!filmService.isContainsFilms(filmId)) {
+        if(!this.isContainsFilms(filmId) && userId < 0) {
             log.warn("Запрос к эндпоинту DELETE не обработан. Фильм с таким id не найден. id = " + filmId);
-            throw new InputDataException("Фильм с таким id не найден");
+            throw new InputDataException("Фильм с таким id не найден или Пользователь с таким id не найден" );
+        } else {
+            filmStorage.updateFilm(film);// в сервисе
         }
-        if(userId < 0) {
-            throw new InputDataException("Пользователь с таким id не найден");
-        }
-        filmService.removeLike(filmId, userId);
     }
 
     public List<Film> getPopularFilms(String count) {//  вывод 10 наиболее популярных фильмов
-         filmStorage.findAllFilms().stream()
-                .filter(film -> film.getAmountLikes() != null)
-                .sorted(sortPopularFilm())
-                .limit(Integer.parseInt(count))
-                .collect(Collectors.toList());
         log.info("Получен запрос к эндпоинту: GET /films/popular");
         if(count != null) {
-            return filmService.getPopularFilms(count);
-        } else {
-            return filmService.getPopularFilms(POPULAR_FILMS);
+            return filmStorage.findAllFilms().stream()
+                    .filter(film -> film.getAmountLikes() != null)
+                    .sorted(sortPopularFilm())
+                    .limit(Integer.parseInt(count))
+                    .collect(Collectors.toList());
         }
-
+        return List.of();
     }
 
 }
