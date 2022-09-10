@@ -84,10 +84,6 @@ public class FilmService {
         return filmStorage.isContainsFilms(id);
     }
 
-//    public FilmStorage getFilmStorage() {
-//        return filmStorage;
-//    }
-
     public void addLike(int filmId, int userId) {// добавление лайка,
         log.info("Получен запрос к эндпоинту: PUT /films добавление лайка к фильму " + filmId + ", пользователя " + userId);
         filmService.addLike(filmId, userId);

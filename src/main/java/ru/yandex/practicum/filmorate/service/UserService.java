@@ -26,13 +26,13 @@ import java.util.List;
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
-    private final UserController userController;
+    //private final UserController userController;
     private final UserService userService;
 
     @Autowired
     public UserService(InMemoryUserStorage inMemoryUserStorage, UserController userController, UserService userService) {
         this.userStorage = inMemoryUserStorage;
-        this.userController = userController;
+        //this.userController = userController;
         this.userService = userService;
     }
 

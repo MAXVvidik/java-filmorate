@@ -23,7 +23,7 @@ import java.util.*;
 @Slf4j
 public class UserController {
     private final UserStorage userStorage;
-    private final UserController userController;
+    //private final UserController userController;
     private final UserService userService;
     private static int id = 0;
 
@@ -35,7 +35,7 @@ public class UserController {
     @Autowired
     public UserController(UserStorage userStorage, UserController userController, UserService userService) {
         this.userStorage = userStorage;
-        this.userController = userController;
+        //this.userController = userController;
         this.userService = userService;
     }
 
@@ -46,14 +46,12 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    //@ResponseBody
     public ResponseEntity<User> createUser(@RequestBody User user) {
         userService.addUser(user);
         userStorage.addUser(user);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
     @PutMapping("/users")
-   // @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         userStorage.updateUser(user);
@@ -85,5 +83,4 @@ public class UserController {
     public void deleteFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
         userService.deleteFriend(id, friendId);
     }
-
 }
