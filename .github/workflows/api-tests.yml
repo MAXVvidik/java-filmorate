@@ -29,7 +29,7 @@ jobs:
           npm install -g newman
 
       - name: install git
-        run: apt-get install git
+        run: sudo apt-get install git
 
       - name: Install helper script
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y wget &&
