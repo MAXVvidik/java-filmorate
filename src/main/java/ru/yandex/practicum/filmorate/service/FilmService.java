@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
@@ -24,13 +26,11 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
 
-
     @Autowired
     public FilmService(InMemoryFilmStorage fileStorage) {
         this.filmStorage = fileStorage;
 
     }
-
     private static int id = 0;
 
     public int getId() {
@@ -38,14 +38,18 @@ public class FilmService {
         return id;
     }
 
-
     public Comparator<Film> sortPopularFilm() {
         return Comparator.comparing(film -> film.getAmountLikes().size(), Comparator.reverseOrder());
     }
     public Film getFilmById(int id) {
+        log.info("Получен запрос к эндпоинту: GET /films/{id}");
+        if(!this.isContainsFilms(id)) {
+            throw new InputDataException("Фильм с таким id не найден");
+        }
         return filmStorage.getFilmById(id);
     }
     public List<Film> findAllFilms() {// поиск всех фильмов
+        log.info("Получен запрос к эндпоинту: GET /films");
         return filmStorage.findAllFilms();
     }
 

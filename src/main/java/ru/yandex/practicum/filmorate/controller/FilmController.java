@@ -30,9 +30,8 @@ public class FilmController {
 
 
     @GetMapping
-    public List<Film> findAllFilms() {
-        log.info("Получен запрос к эндпоинту: GET /films");
-        return filmService.findAllFilms();
+    public ResponseEntity<List<Film>> findAllFilms() {
+        return new ResponseEntity<>(filmService.findAllFilms(), HttpStatus.OK);
     }
 
     @PostMapping
@@ -48,17 +47,13 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmByID(@PathVariable("id") int id) {
-        log.info("Получен запрос к эндпоинту: GET /films/{id}");
-        if(!filmService.isContainsFilms(id)) {
-            throw new InputDataException("Фильм с таким id не найден");
-        }
-        return filmService.getFilmById(id);
+    public ResponseEntity<Film> getFilmByID(@PathVariable("id") int id) {
+        return new ResponseEntity<>(filmService.getFilmById(id), HttpStatus.OK);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(required = false) String count) {
-        return filmService.getPopularFilms(count);
+    public ResponseEntity<List<Film>> getPopularFilms(@RequestParam(required = false) String count) {
+        return new ResponseEntity<>(filmService.getPopularFilms(count), HttpStatus.OK);
     }
 
 
