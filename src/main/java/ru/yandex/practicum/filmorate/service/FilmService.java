@@ -62,7 +62,7 @@ public class FilmService {
             film.setId(film.getId());
             filmStorage.addFilm(film);
         } else {
-            log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
+            log.warn("Запрос к эндпоинту POST не обработан. Введенные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
         }
     }
@@ -77,7 +77,7 @@ public class FilmService {
             log.info("Получен запрос к эндпоинту: PUT /films обновление фильма");
             filmStorage.updateFilm(film);
         } else {
-            log.warn("Запрос к эндпоинту POST не обработан. Введеные данные о фильме не удовлетворяют условиям");
+            log.warn("Запрос к эндпоинту POST не обработан. Введенные данные о фильме не удовлетворяют условиям");
             throw new ValidationException("Одно или несколько из условий не выполняются.");
         }
     }
