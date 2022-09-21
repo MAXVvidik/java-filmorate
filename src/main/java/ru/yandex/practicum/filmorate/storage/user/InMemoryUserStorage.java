@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -19,9 +18,10 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     @Override
-    public void addUser(User user) {// добавление юзера
+    public User addUser(User user) {// добавление юзера
         users.put(user.getId(),user);
 
+        return user;
     }
 
     @Override
@@ -41,6 +41,49 @@ public class InMemoryUserStorage implements UserStorage{
         }else {
             return false;
         }
+    }
+
+    @Override
+    public List<User> mutualFriends(int id, int friendId) {
+        User firstUser = users.get(id);
+        User secondUser = users.get(friendId);
+        List<User> mutualFriends = new ArrayList<>();
+        firstUser.getFriends().stream()
+                .filter(idUser -> secondUser.getFriends().contains(idUser))
+                .forEach(idUser -> mutualFriends.add(users.get(idUser)));
+        return mutualFriends;
+    }
+
+    @Override
+    public List<User> getAllFriend(int id) {
+        List<User> mutualFriends = new ArrayList<>();
+        User user = users.get(id);
+        for(Integer idFriend : user.getFriends()) {
+            User friend = users.get(idFriend);
+            mutualFriends.add(friend);
+        }
+        return mutualFriends;
+    }
+
+
+    @Override
+    public void addFriend(int id, int friendId) {
+        User firstUser = users.get(id);
+        User secondUser = users.get(friendId);
+        firstUser.getFriends().add(secondUser.getId());
+        secondUser.getFriends().add(firstUser.getId());
+        updateUser(firstUser);
+        updateUser(secondUser);
+    }
+
+    @Override
+    public void deleteFriend(int id, int friendId) {
+        User firstUser = users.get(id);
+        User secondUser = users.get(friendId);
+        firstUser.getFriends().remove(secondUser.getId());
+        secondUser.getFriends().remove(firstUser.getId());
+        updateUser(firstUser);
+        updateUser(secondUser);
     }
 }
 //Создайте интерфейсы FilmStorage и UserStorage,
