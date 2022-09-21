@@ -1,15 +1,17 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 import ru.yandex.practicum.filmorate.exception.InputDataException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.film.ratingMpa.RatingMpaStorage;
 import ru.yandex.practicum.filmorate.validate.FilmDataValidate;
 
 import java.util.Comparator;
@@ -23,15 +25,19 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
-
     private final FilmStorage filmStorage;
+    private final GenreStorage genreStorage;
+    private final RatingMpaStorage ratingMpaStorage;
 
-    @Autowired
-    public FilmService(InMemoryFilmStorage fileStorage) {
-        this.filmStorage = fileStorage;
 
-    }
     private static int id = 0;
+
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("genreDbStorage") GenreStorage genreStorage,
+                       @Qualifier("ratingMpaDbStorage") RatingMpaStorage ratingMpaStorage) {
+        this.filmStorage = filmStorage;
+        this.genreStorage = genreStorage;
+        this.ratingMpaStorage = ratingMpaStorage;
+    }
 
     public int getId() {
         this.id++;
@@ -117,4 +123,28 @@ public class FilmService {
         return List.of();
     }
 
+    public Genre getGenreById(int id) {// поиск жанров
+        if(id < 1) {
+            log.warn("Запрос к эндпоинту GET не обработан. Жанр с таким id не найден. id = " + id);
+            throw new InputDataException("Некорректный id жанра");
+        }
+        return genreStorage.getGenreById(id);
+    }
+
+
+    public Mpa getRatingById(int id) {// поиск рейтинга
+        if(id < 1) {
+            log.warn("Запрос к эндпоинту GET не обработан. Рейтинг с таким id не найден. id = " + id);
+            throw new InputDataException("Некорректный id рейтинга");
+        }
+        return ratingMpaStorage.getMpaRatingById(id);
+    }
+
+    public List<Genre> findAllGenres() {// лист всех жанров
+        return genreStorage.findAllGenres();
+    }
+
+    public List<Mpa> findAllRatings() {// лист рейтингов
+        return ratingMpaStorage.findAllMpaRatings();
+    }
 }

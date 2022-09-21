@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,11 +28,16 @@ import java.util.List;
 public class UserService {
     private final UserStorage userStorage;
 
-    @Autowired
-    public UserService(InMemoryUserStorage inMemoryUserStorage) {
-        this.userStorage = inMemoryUserStorage;
-
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
     }
+//    private final UserStorage userStorage;
+//
+//    @Autowired
+//    public UserService(InMemoryUserStorage inMemoryUserStorage) {
+//        this.userStorage = inMemoryUserStorage;
+//
+//    }
 
     public List<User> findAllUsers() {// поиск всех
         return userStorage.findAllUsers();
